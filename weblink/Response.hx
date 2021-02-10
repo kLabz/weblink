@@ -12,10 +12,10 @@ class Response
     public var status:HttpStatus;
     public var contentType:String;
     public var headers:List<Header>;
-    var socket:Socket;
+    var socket:asys.net.Socket;
     var server:Server;
     var close:Bool = true;
-    private function new(socket:Socket,server:Server)
+    private function new(socket:asys.net.Socket,server:Server)
     {
         this.socket = socket;
         this.server = server;
@@ -24,8 +24,8 @@ class Response
     }
     public inline function sendBytes(bytes:Bytes)
     {
-        socket.writeString(sendHeaders(bytes.length).toString());
-        socket.writeBytes(bytes);
+        socket.write(Bytes.ofString(sendHeaders(bytes.length).toString()));
+        socket.write(bytes);
         end();
     }
     public inline function redirect(path:String)
@@ -34,19 +34,19 @@ class Response
         headers = new List<Header>();
         var string = initLine();
         string += 'Location: $path\r\n\r\n';
-        socket.writeString(string);
+        socket.write(Bytes.ofString(string));
         end();
     }
     public inline function send(data:String)
     {
         var buff = sendHeaders(data.length);
         buff.add(data);
-        socket.writeString(buff.toString());
+        socket.write(Bytes.ofString(buff.toString()));
         end();
     }
     private function end()
     {
-        if (close) 
+        if (close)
         {
             server.closeSocket(socket);
         }
@@ -67,7 +67,7 @@ class Response
         'Content-type: $contentType\r\n' +
         'Content-length: $length\r\n'
         );
-        if (headers != null) 
+        if (headers != null)
         {
             for (header in headers)
             {
